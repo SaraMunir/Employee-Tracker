@@ -1,6 +1,6 @@
 const inquirer = require("inquirer");
 var fs = require('fs')
-const axios = require("axios");
+const express = require("express");
 
 async function main(){
     const userResponse = await inquirer
@@ -12,5 +12,4 @@ async function main(){
             choices: ['View all Employees', '']
         }
     ])
-
 }
