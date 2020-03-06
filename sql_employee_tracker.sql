@@ -31,5 +31,17 @@ INSERT INTO role (title, salary,department_id) VALUES('Accounts Manager', '6000'
 INSERT INTO role (title, salary,department_id) VALUES('HR Manager', '10000', '2' );
 INSERT INTO role (title, salary,department_id) VALUES('Recruiting Manager', '10000', '2' );
 INSERT INTO employee (first_name, last_name, role_id) VALUES('joana', 'santosh', '1' );
-INSERT INTO employee (first_name, last_name, role_id) VALUES('Norma', 'Moras', '2' );
+INSERT INTO employee (first_name, last_name, role_id) VALUES('Norma', 'Moras', '3' );
 
+
+SELECT * FROM employee 
+LEFT JOIN role ON employee.role_id = role.role_id
+LEFT JOIN department ON role.department_id = department.department_id
+;
+CREATE TABLE new_table SELECT * FROM role 
+LEFT JOIN department ON role.department_id = department.department_id
+;
+SELECT * FROM new_table 
+
+SELECT employee_id, CONCAT( first_name, " ", last_name ) AS fullname 
+FROM employee_tracker.employee;

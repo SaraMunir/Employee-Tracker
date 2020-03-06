@@ -1,3 +1,4 @@
+require('events').EventEmitter.defaultMaxListeners = 40;
 const inquirer = require("inquirer");
 // var fs = require('fs')
 const mysql = require( 'mysql' );
@@ -30,45 +31,26 @@ const db = new Database({
     port: 3306,
     user: "root",
     password: "1234",
-    database: "pictures"
+    database: "employee_tracker"
 });
 async function main(){
-    let departmentList = [
-        { name: 'Sales Department1', id: 1 },
-        { name: 'HR Department2', id: 2 },
-        { name: 'Service Department3', id: 3 },
-        { name: 'Audit Department3', id: 4 }
-    ];
-    let roleList = [
-        { title: 'manager', salary: '$6000', id: 1},
-        { title: 'supervisor', salary: '$4000', id: 2},
-        { title: 'agent', salary: '$2500', id: 3},
-    ];
-    let employee = [
-        {
-            first_name: 'Tahmina',
-            last_name: 'Shorna',
-            role: 'supervisor',
-            id: 1
-        },
-        {
-            first_name: 'Sara',
-            last_name: 'Munir',
-            role: 'agent',
-            id: 2
-        },
-        {
-            first_name: 'Norma',
-            last_name: 'Moras',
-            role: 'agent',
-            id: 3
-        }
-    ];
+    let departmentList = await db.query( `SELECT * FROM employee_tracker.department;`)
+    let roleList = await db.query( `SELECT * FROM employee_tracker.role;`)
+    let employee = await db.query( `SELECT * FROM employee_tracker.employee;`)
+    let employeesList = await db.query( `SELECT * FROM employee_tracker.employee;`)
+    let employeeNameList = await db.query( `SELECT employee_id, CONCAT( first_name, " ", last_name ) AS fullname FROM employee_tracker.employee;`);
     let employeeName = [];
     for (var i=0; i<employee.length; i++){
         var fullName = employee[i].first_name + ' ' + employee[i].last_name;
         employeeName.push(fullName);
     }
+    let departmentNameList = [];
+    for (var i=0; i<departmentList.length; i++){
+        var department = departmentList[i].name;
+        departmentNameList.push(department);
+    }
+    console.log(employee);
+    console.log(employeeName);
     async function showMenu(){
         const userShowMenu = await inquirer.prompt([
             {
@@ -79,6 +61,8 @@ async function main(){
             }])
             if (userShowMenu.back === 'yes'){
                     return main();
+                } else {
+                    process.exit(0);
                 }
     }
     const userActivityType = await inquirer
@@ -87,13 +71,11 @@ async function main(){
                 type: "list",
                 message: "What would you like to do?",
                 name: "whatToDo",
-                choices: ['Add', 'View', 'Update']
+                choices: ['Add', 'View', 'Update', 'Remove']
             }
         ])
     var whatToDo = userActivityType.whatToDo;
-    async function runSwitchToDo(){
-        switch(whatToDo)
-            {
+        switch(whatToDo){
             //==== Add
             case "Add": 
                 const userResAdd = await inquirer.prompt([
@@ -109,7 +91,7 @@ async function main(){
             //=========Add Options
                 switch(whatToAdd){
                     case "Departments":
-                        const userResDept = await inquirer
+                        const userResNewDept = await inquirer
                         .prompt([
                             {
                                 type: "input",
@@ -117,26 +99,34 @@ async function main(){
                                 name: "departmentName",
                             }
                         ])
-                        const departmentName = userResDept.departmentName;
-                        await $.post('/api/add_Department', departmentName)
-                        console.log(departmentName);
+                        await db.query( `INSERT INTO department (name) VALUES(?);`, [userResNewDept.departmentName] )
                         showMenu();
                         break;
                     case "Roles":
-                        const userResRoles = await inquirer
+                        const userResNewRole = await inquirer
                         .prompt([
                             {
                                 type: "input",
                                 message: "What is the name of the New Role?",
-                                name: "newRole",
+                                name: "newRoleTitle",
+                            },
+                            {
+                                type: "input",
+                                message: "What is the salary of the Role?",
+                                name: "newRoleSalary",
+                            },
+                            {
+                                type: "input",
+                                message: "What is the department=id of the Role?",
+                                name: "newRoleDeptId",
                             }
                         ])
-                        const newRole = userResRoles.newRole;
-                        console.log(newRole);
+                        await db.query( `INSERT INTO role (title, salary,department_id) VALUES(?,?,?);`, [userResNewRole.newRoleTitle, userResNewRole.newRoleSalary, userResNewRole.newRoleDeptId] )
+                        console.log('new role added: ', userResNewRole.newRoleTitle);
                         showMenu();
                         break;
                     case "Employees":
-                        const userResEmployees = await inquirer
+                        const userResNewEmployee = await inquirer
                         .prompt([
                             {
                                 type: "input",
@@ -150,14 +140,12 @@ async function main(){
                             },
                             {
                                 type: "input",
-                                message: "What is the role id of the New Employee?",
+                                message: "What is the role id no of the New Employee?",
                                 name: "employeeRoleId",
                             }
                         ])
-                        const employeeFirstName = userResEmployees.employeeFirstName;
-                        const employeeLastName = userResEmployees.employeeLastName;
-                        const employeeRoleId = userResEmployees.employeeRoleId;
-                        console.log('employe name & id: ' + employeeFirstName + ' ' + employeeLastName + ' ' + employeeRoleId);
+                        await db.query( `INSERT INTO employee (first_name, last_name, role_id) VALUES(?, ?, ?);`, [userResNewEmployee.employeeFirstName,  userResNewEmployee.employeeLastName, userResNewEmployee.employeeRoleId] )
+                        console.log('new employee: ' + userResNewEmployee.employeeFirstName + ' ' + userResNewEmployee.employeeLastName + '. role id of ' + userResNewEmployee.employeeRoleId + ' has been added to the database.');
                         showMenu();
                         break;
                     }
@@ -169,24 +157,32 @@ async function main(){
                         type: "list",
                         message: "What would you like to view?",
                         name: "whatToView",
-                        choices: ['Departments', 'Roles', 'Employees']}])
+                        choices: [
+                            'View all Departments', 
+                            'View all Roles', 
+                            'View all Employees', 
+                            'view All']}])
             //==== View Options
                 const whatToView = userResView.whatToView;
                 switch(whatToView){
-                    case "Departments":
+                    case "View all Departments":
+                        
                         console.table(departmentList);
                         showMenu()
-                        
                         break;
-                    case "Roles":
+                    case "View all Roles":
                         console.table(roleList);
                         showMenu();
-
                         break;
-                    case "Employees":
-                        console.table(employee);
+                    case "View all Employees":
+                        
+                        console.table(employeesList);
                         showMenu();
-
+                        break;
+                    case "view All":
+                        let allDatabase = await db.query(`SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.role_id LEFT JOIN department ON role.department_id = department.department_id;`)
+                        console.table(allDatabase);
+                        showMenu();
                         break;
                     };
                 break;        
@@ -199,16 +195,60 @@ async function main(){
                         message: "Which Employee would you like to update?",
                         name: "employeeToUpdate",
                         choices: employeeName
-                    }
+                    },
+                    {
+                        type: "list",
+                        message: "What role would you like to set for the employee?",
+                        name: "employeeRoleToUpdate",
+                        choices: roleList
+                    },
+                    
                 ])
                 const employeeToUpdate = userResUpd.employeeToUpdate;
-                console.log(employeeToUpdate)
+                const employeeRoleToUpdate = userResUpd.employeeRoleToUpdate;
+                
                 showMenu();
-
+                break;
+        //=========new View
+            case "Remove": 
+                const userResRemv = await inquirer
+                .prompt([
+                    {
+                        type: "list",
+                        message: "What section would you like to edit",
+                        name: "sectionToRemv",
+                        choices: ['Departments', 'Roles', 'Employees']
+                    }
+                ])
+                const sectionToRemv = userResRemv.sectionToRemv;
+                    switch(sectionToRemv){
+                        case "Departments":
+                            console.table(departmentList);
+                            const userResDelDept = await inquirer
+                                .prompt([
+                                    {
+                                        type: "list",
+                                        message: "Which department would you like to delete",
+                                        name: "departmentToDelete",
+                                        choices: departmentNameList
+                                    }
+                                ])
+                            showMenu()
+                            break;
+                        case "Roles":
+                            console.table(roleList);
+                            showMenu();
+                            break;
+                        case "Employees":
+                            console.table(employee);
+                            showMenu();
+                            break;
+                        };
+                showMenu();
                 break;
             };
             //==== View
-    }
-    runSwitchToDo();
+    
+    // runSwitchToDo();
 }
 main();

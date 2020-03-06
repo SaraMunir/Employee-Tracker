@@ -19,6 +19,7 @@
   "homepage": "https://github.com/SaraMunir/Employee-Tracker#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "inquirer": "^7.0.6"
+    "inquirer": "^7.0.6",
+    "mysql": "^2.18.1"
   }
 }
