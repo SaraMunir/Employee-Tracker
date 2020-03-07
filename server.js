@@ -84,7 +84,7 @@ async function main(){
                 type: "list",
                 message: "What would you like to do?",
                 name: "whatToDo",
-                choices: ['Add', 'View', 'Update', 'Remove']
+                choices: ['View','Add', 'Update', 'Remove']
             }
         ])
     var whatToDo = userActivityType.whatToDo;
@@ -181,15 +181,15 @@ async function main(){
                         choices: [
                             'View all Departments', 
                             'View all Roles', 
-                            'View all Employees', 
-                            'view All',
-                            'View Employees by Department'
+                            'View all Employees',
+                            'View Employees by Department',
+                            'View Employees by Role',
+                            'view All'
                         ]}])
             //==== View Options
                 const whatToView = userResView.whatToView;
                 switch(whatToView){
                     case "View all Departments":
-                        
                         console.table(departmentList);
                         showMenu()
                         break;
@@ -198,7 +198,6 @@ async function main(){
                         showMenu();
                         break;
                     case "View all Employees":
-                        
                         console.table(employee);
                         showMenu();
                         break;
@@ -210,9 +209,25 @@ async function main(){
                                 name: "whichDeptToView",
                                 choices: departmentNameList
                                 }])
-
                         let depToView = await db.query(`SELECT department.name,employee.first_name,employee.last_name,role.title FROM department,role,employee WHERE department.department_id=role.department_id AND role.role_id=employee.role_id AND department.name = ?;`, [emplByDept.whichDeptToView])
                         console.table(depToView);
+                        showMenu();
+                        break;
+                    case "View Employees by Role":
+                    const emplByRole = await inquirer
+                    .prompt([{
+                            type: "list",
+                            message: "Which department would you like to view?",
+                            name: "whichRoleToView",
+                            choices: roleNameList
+                            }])
+
+                        var respEmplByRole = emplByRole.whichRoleToView;
+                        var respEmplByRoleArray = respEmplByRole.split(" ");
+
+                        console.log(emplByRole.whichRoleToView);
+                        newEmplByRole = await db.query(`SELECT role.title, employee.first_name, employee.last_name, role.salary FROM role,employee,department WHERE role.role_id=employee.role_id AND department.department_id=role.department_id AND role.role_id = ?;`, [respEmplByRoleArray[0]])
+                        console.table(newEmplByRole)
                         showMenu();
                         break;
                     case "view All":
@@ -231,18 +246,28 @@ async function main(){
                         message: "Which Employee would you like to update?",
                         name: "employeeToUpdate",
                         choices: newEmployeeNameList
-                    },
+                    }
+                    ,
                     {
                         type: "list",
                         message: "What role would you like to set for the employee?",
                         name: "employeeRoleToUpdate",
-                        choices: roleList
+                        choices: roleNameList
                     },
                     
                 ])
                 const employeeToUpdate = userResUpd.employeeToUpdate;
                 const employeeRoleToUpdate = userResUpd.employeeRoleToUpdate;
-                
+
+
+                var employeeToUpdateArray = employeeToUpdate.split(" ");
+                var emp_id = employeeToUpdateArray[1]
+                var empRoleToUpdtArray = employeeRoleToUpdate.split(" ");
+                var empRole_id = empRoleToUpdtArray[0];
+
+                let newEmpRole = await db.query(`UPDATE employee SET role_id = ? WHERE employee_id = ?;`, [empRole_id, emp_id])
+
+                console.log( `employee role has been updated`)
                 showMenu();
                 break;
         //=========new View
@@ -292,8 +317,7 @@ async function main(){
                             showMenu();
                             break;
                         case "Employees":
-                            // const namesLetsseee = await db.query(`SELECT employee_id, CONCAT( first_name, " ", last_name ) AS fullname FROM employee_tracker.employee;`)
-                            // console.table(namesLetsseee);
+
                             const userResDelEmployees = await inquirer
                                 .prompt([
                                     {
@@ -311,7 +335,7 @@ async function main(){
                                 var last_name= nameArray[3]
                                 await db.query(`DELETE FROM employee WHERE first_name = ? AND last_name = ? AND employee_id = ?;`, [first_name, last_name, emp_id])
                                 
-                                console.log(`${userResDelEmployees.employeeToDelete} has been deleted successfully`)
+                                console.log(`${employeeToDelete} has been deleted successfully`)
                             showMenu();
                             break;
                         };
