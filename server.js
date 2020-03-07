@@ -39,18 +39,31 @@ async function main(){
     let employee = await db.query( `SELECT * FROM employee_tracker.employee;`)
     let employeesList = await db.query( `SELECT * FROM employee_tracker.employee;`)
     let employeeNameList = await db.query( `SELECT employee_id, CONCAT( first_name, " ", last_name ) AS fullname FROM employee_tracker.employee;`);
-    let employeeName = [];
-    for (var i=0; i<employee.length; i++){
-        var fullName = employee[i].first_name + ' ' + employee[i].last_name;
-        employeeName.push(fullName);
+    // console.log(employeeNameList[0].fullname);
+    let newEmployeeNameList = [];
+    let employeeInfor = [];
+    for (var i=0; i<employeeNameList.length; i++){
+        var employeeObj = {
+            emp_fullname: employeeNameList[i].fullname,
+            emp_id: employeeNameList[i].employee_id
+        }
+        employeeInfor.push(employeeObj);
+        newEmployeeNameList.push('id: ' + employeeObj.emp_id +' '+ employeeObj.emp_fullname);
     }
     let departmentNameList = [];
     for (var i=0; i<departmentList.length; i++){
         var department = departmentList[i].name;
         departmentNameList.push(department);
     }
-    console.log(employee);
-    console.log(employeeName);
+
+    let roleNameList = [];
+    for (var i=0; i<roleList.length; i++){
+        var role = roleList[i].title;
+        var role_id = roleList[i].role_id;
+        roleNameList.push(role_id + ' ' + role);
+    }
+    // console.log(employee);
+    // console.log(employeeName);
     async function showMenu(){
         const userShowMenu = await inquirer.prompt([
             {
@@ -139,13 +152,21 @@ async function main(){
                                 name: "employeeLastName",
                             },
                             {
-                                type: "input",
-                                message: "What is the role id no of the New Employee?",
-                                name: "employeeRoleId",
+                                type: "list",
+                                message: "Select Employees role",
+                                name: "employeeRole",
+                                choices: roleNameList
                             }
                         ])
-                        await db.query( `INSERT INTO employee (first_name, last_name, role_id) VALUES(?, ?, ?);`, [userResNewEmployee.employeeFirstName,  userResNewEmployee.employeeLastName, userResNewEmployee.employeeRoleId] )
-                        console.log('new employee: ' + userResNewEmployee.employeeFirstName + ' ' + userResNewEmployee.employeeLastName + '. role id of ' + userResNewEmployee.employeeRoleId + ' has been added to the database.');
+
+                        var employeeRole = userResNewEmployee.employeeRole
+                        console.log(employeeRole)
+                        var employeeRole = employeeRole.split(" ");
+                        var role_id = employeeRole[0];
+                        console.log(role_id);
+
+                        await db.query( `INSERT INTO employee (first_name, last_name, role_id) VALUES(?, ?, ?);`, [userResNewEmployee.employeeFirstName,  userResNewEmployee.employeeLastName, role_id] )
+                        console.log('new employee: ' + userResNewEmployee.employeeFirstName + ' ' + userResNewEmployee.employeeLastName + '. role id of ' + role_id + ' has been added to the database.');
                         showMenu();
                         break;
                     }
@@ -161,7 +182,9 @@ async function main(){
                             'View all Departments', 
                             'View all Roles', 
                             'View all Employees', 
-                            'view All']}])
+                            'view All',
+                            'View Employees by Department'
+                        ]}])
             //==== View Options
                 const whatToView = userResView.whatToView;
                 switch(whatToView){
@@ -176,7 +199,20 @@ async function main(){
                         break;
                     case "View all Employees":
                         
-                        console.table(employeesList);
+                        console.table(employee);
+                        showMenu();
+                        break;
+                    case "View Employees by Department":
+                        const emplByDept = await inquirer
+                        .prompt([{
+                                type: "list",
+                                message: "Which department would you like to view?",
+                                name: "whichDeptToView",
+                                choices: departmentNameList
+                                }])
+
+                        let depToView = await db.query(`SELECT department.name,employee.first_name,employee.last_name,role.title FROM department,role,employee WHERE department.department_id=role.department_id AND role.role_id=employee.role_id AND department.name = ?;`, [emplByDept.whichDeptToView])
+                        console.table(depToView);
                         showMenu();
                         break;
                     case "view All":
@@ -194,7 +230,7 @@ async function main(){
                         type: "list",
                         message: "Which Employee would you like to update?",
                         name: "employeeToUpdate",
-                        choices: employeeName
+                        choices: newEmployeeNameList
                     },
                     {
                         type: "list",
@@ -223,7 +259,6 @@ async function main(){
                 const sectionToRemv = userResRemv.sectionToRemv;
                     switch(sectionToRemv){
                         case "Departments":
-                            console.table(departmentList);
                             const userResDelDept = await inquirer
                                 .prompt([
                                     {
@@ -233,18 +268,53 @@ async function main(){
                                         choices: departmentNameList
                                     }
                                 ])
+                                await db.query(`DELETE FROM department WHERE name = ?;`, [userResDelDept.departmentToDelete])
+                                console.log(`${userResDelDept.departmentToDelete} has been deleted successfully`)
                             showMenu()
                             break;
                         case "Roles":
-                            console.table(roleList);
+                            const userResDelRoles = await inquirer
+                                .prompt([
+                                    {
+                                        type: "list",
+                                        message: "Which role would you like to delete",
+                                        name: "roleToDelete",
+                                        choices: roleNameList
+                                    }
+                                ])
+                                var roletodeleteStr = userResDelRoles.roleToDelete
+                                var role_id = roletodeleteStr[0];
+                                console.log(role_id);
+                                // var roleTitle= roleArray[1]+roleArray[2]
+                                // console.log( role_id + roleTitle)
+                                await db.query(`DELETE FROM role WHERE (role_id = ? );`, [role_id])
+                                console.log(`${userResDelRoles.roleToDelete} has been deleted successfully`)
                             showMenu();
                             break;
                         case "Employees":
-                            console.table(employee);
+                            // const namesLetsseee = await db.query(`SELECT employee_id, CONCAT( first_name, " ", last_name ) AS fullname FROM employee_tracker.employee;`)
+                            // console.table(namesLetsseee);
+                            const userResDelEmployees = await inquirer
+                                .prompt([
+                                    {
+                                        type: "list",
+                                        message: "Which employee would you like to delete",
+                                        name: "employeeToDelete",
+                                        choices: newEmployeeNameList
+                                    }
+                                ])
+                                var employeeToDelete = userResDelEmployees.employeeToDelete
+                                console.log(employeeToDelete);
+                                var nameArray = employeeToDelete.split(" ");
+                                var emp_id = nameArray[1]
+                                var first_name= nameArray[2]
+                                var last_name= nameArray[3]
+                                await db.query(`DELETE FROM employee WHERE first_name = ? AND last_name = ? AND employee_id = ?;`, [first_name, last_name, emp_id])
+                                
+                                console.log(`${userResDelEmployees.employeeToDelete} has been deleted successfully`)
                             showMenu();
                             break;
                         };
-                showMenu();
                 break;
             };
             //==== View

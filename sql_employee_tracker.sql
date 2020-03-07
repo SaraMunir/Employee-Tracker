@@ -9,6 +9,7 @@ name VARCHAR(30) NOT NULL
 DROP TABLE department;
 DROP TABLE role;
 DROP TABLE role;
+
 CREATE TABLE role (
 role_id INT PRIMARY KEY auto_increment ,
 title VARCHAR(30) NOT NULL,
@@ -45,3 +46,16 @@ SELECT * FROM new_table
 
 SELECT employee_id, CONCAT( first_name, " ", last_name ) AS fullname 
 FROM employee_tracker.employee;
+
+
+
+SELECT department.name,employee.first_name,employee.last_name,role.salary
+FROM department,role,employee
+WHERE department.department_id=role.department_id
+AND role.role_id=employee.role_id ;
+
+
+SELECT department.name,employee.first_name,employee.last_name,role.salary,role.title
+FROM department,role,employee
+WHERE department.department_id=role.department_id
+AND role.role_id=employee.role_id AND department.name = 'Accounts and Finance';
