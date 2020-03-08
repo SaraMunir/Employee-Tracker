@@ -9,7 +9,7 @@ The objective of the project was to architect and build a solution for managing 
 
 A database schema containing three tables is created as follows:
 
-![Database Schema](Assets/schema.png)
+![Database Schema](assets/schema.png)
 
 
 ## Installation
