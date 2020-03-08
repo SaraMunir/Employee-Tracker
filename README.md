@@ -45,7 +45,7 @@ Under the view option the user can access the following choices:
 ![Employee Tracker](assets/View_functions-1.gif)
 ![Employee Tracker](assets/View_functions-2.gif)
 
-## Add
+## Add 
 
 Under the add option the user can access the following choices:
 
@@ -54,6 +54,7 @@ Under the add option the user can access the following choices:
     * Employees
 
 ### Examples
+Following are the examples on how each of this options work.
 
 #### The Add department Scenario
 ![View menu](assets/add_department_example.png)
@@ -65,3 +66,9 @@ Under the add option the user can access the following choices:
 ![View menu](assets/Add_Employee.gif)
 
 
+## Update
+The update allows the user to edit the roles of employees. 
+
+### Examples
+#### The Update employee Scenario
+![View menu](assets/Update_Employee.gif)
