@@ -38,16 +38,7 @@ Under the view option the user can access the following choices:
 
 ### example of the view options working
 
-![Employee Tracker](assets/View_functions.gif)
-
-
-
-[![View Functions]({assets/view_Menu.png})]({assets/View_Functions.webm} "View Functions")
-
-[![Alternate Text]({image-url})]({video-url} "Link Title")
-
-![View_Functions](assets/View_Functions.webm)
-
-![Employee Tracker](assets/View_Functions.webm)
+![Employee Tracker](assets/View_functions-1.gif)
+![Employee Tracker](assets/View_functions-2.gif)
 
  has four basic options that the user has to choose when it is run. 
