@@ -40,6 +40,7 @@ async function main(){
     let employeesList = await db.query( `SELECT * FROM employee_tracker.employee;`)
     let employeeNameList = await db.query( `SELECT employee_id, CONCAT( first_name, " ", last_name ) AS fullname FROM employee_tracker.employee;`);
     // console.log(employeeNameList[0].fullname);
+    // console.log(departmentList);
     let newEmployeeNameList = [];
     let employeeInfor = [];
     for (var i=0; i<employeeNameList.length; i++){
@@ -53,8 +54,10 @@ async function main(){
     let departmentNameList = [];
     for (var i=0; i<departmentList.length; i++){
         var department = departmentList[i].name;
-        departmentNameList.push(department);
+        var department_id = departmentList[i].department_id;
+        departmentNameList.push(department_id + ' ' + department);
     }
+    // console.log(departmentNameList)
 
     let roleNameList = [];
     for (var i=0; i<roleList.length; i++){
@@ -129,12 +132,16 @@ async function main(){
                                 name: "newRoleSalary",
                             },
                             {
-                                type: "input",
-                                message: "What is the department=id of the Role?",
-                                name: "newRoleDeptId",
+                                type: "list",
+                                message: "Select the department of the role ",
+                                name: "newRoleDept2",
+                                choices: departmentNameList
                             }
                         ])
-                        await db.query( `INSERT INTO role (title, salary,department_id) VALUES(?,?,?);`, [userResNewRole.newRoleTitle, userResNewRole.newRoleSalary, userResNewRole.newRoleDeptId] )
+                        var newRoleDept2 = userResNewRole.newRoleDept2;
+                        var newRoleDeptIdArray = newRoleDept2.split(" ");
+                        var newRoleDeptId = newRoleDeptIdArray[0];
+                        await db.query( `INSERT INTO role (title, salary,department_id) VALUES(?,?,?);`, [userResNewRole.newRoleTitle, userResNewRole.newRoleSalary, newRoleDeptId] )
                         console.log('new role added: ', userResNewRole.newRoleTitle);
                         showMenu();
                         break;
@@ -217,7 +224,7 @@ async function main(){
                     const emplByRole = await inquirer
                     .prompt([{
                             type: "list",
-                            message: "Which department would you like to view?",
+                            message: "Which role would you like to view?",
                             name: "whichRoleToView",
                             choices: roleNameList
                             }])

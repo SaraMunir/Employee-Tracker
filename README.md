@@ -20,10 +20,14 @@ In order to run the program the following packages has to be installed
 ## Basic Structure of the application
 ### Start Menu
 The application has four basic options that the user has to choose when it is run. 
+* > View
+* > Add
+* > Update
+* > Remove
 
  ![Start menu](assets/Start_Menu.png)
 
-### View
+## View
 
 Under the view option the user can access the following choices:
 
@@ -41,4 +45,23 @@ Under the view option the user can access the following choices:
 ![Employee Tracker](assets/View_functions-1.gif)
 ![Employee Tracker](assets/View_functions-2.gif)
 
- has four basic options that the user has to choose when it is run. 
+## Add
+
+Under the add option the user can access the following choices:
+
+    * Departments
+    * Roles
+    * Employees
+
+### Examples
+
+#### The Add department Scenario
+![View menu](assets/add_department_example.png)
+
+#### The Add role Scenario
+![View menu](assets/add_role_example.png)
+
+#### The Add employee Scenario
+![View menu](assets/Add_Employee.gif)
+
+
