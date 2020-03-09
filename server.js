@@ -216,8 +216,10 @@ async function main(){
                                 name: "whichDeptToView",
                                 choices: departmentNameList
                                 }])
-                        console.log(emplByDept.whichDeptToView[0])
-                        let depToView = await db.query(`SELECT department.name,employee.first_name,employee.last_name,role.title FROM department,role,employee WHERE department.department_id=role.department_id AND role.role_id=employee.role_id AND department.department_id = ?;`, [emplByDept.whichDeptToView[0]])
+                        DeptVieByEmp = emplByDept.whichDeptToView;
+                        DeptVieByEmpArray = DeptVieByEmp.split(" ")
+                        // console.log(emplByDept.whichDeptToView[0])
+                        let depToView = await db.query(`SELECT department.name,employee.first_name,employee.last_name,role.title FROM department,role,employee WHERE department.department_id=role.department_id AND role.role_id=employee.role_id AND department.department_id = ?;`, [DeptVieByEmpArray[0]])
                         console.table(depToView);
                         showMenu();
                         break;
